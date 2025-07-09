@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>กรอกรหัสผ่านแบบกดตัวเลข</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600&display=swap');
+
+  /* Reset */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: linear-gradient(135deg, #4a90e2 0%, #50e3c2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #1c1c1e;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .pin-container {
+    background: #ffffffee;
+    padding: 40px 50px 50px 50px;
+    border-radius: 30px;
+    box-shadow:
+      0 12px 24px rgba(0, 0, 0, 0.12),
+      0 8px 16px rgba(0, 0, 0, 0.08);
+    width: 360px;
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 30px;
+    font-weight: 700;
+    font-size: 1.9rem;
+    letter-spacing: 1.2px;
+  }
+
+  .pin-display {
+    font-size: 44px;
+    letter-spacing: 18px;
+    margin-bottom: 40px;
+    height: 50px;
+    user-select: none;
+  }
+
+  .pin-display span {
+    display: inline-block;
+    width: 28px;
+    border-bottom: 3.5px solid #d1d1d6;
+    border-radius: 10px;
+    margin: 0 6px;
+    transition: border-color 0.3s ease;
+  }
+
+  .pin-display span.filled {
+    border-color: #007aff;
+  }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .keypad button {
+    padding: 22px 0;
+    font-size: 30px;
+    border-radius: 50%;
+    border: none;
+    background-color: #f5f5f7;
+    color: #1c1c1e;
+    cursor: pointer;
+    user-select: none;
+    box-shadow:
+      0 5px 10px rgba(0, 0, 0, 0.07);
+    transition:
+      background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.15s ease;
+  }
+
+  .keypad button:hover:not(.disabled) {
+    background-color: #e0e0e5;
+  }
+
+  .keypad button:active:not(.disabled) {
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.2);
+    transform: scale(0.95);
+    background-color: #d0d0d4;
+  }
+
+  .keypad button.disabled {
+    background-color: transparent;
+    cursor: default;
+    box-shadow: none;
+  }
+
+  .keypad button.delete {
+    font-size: 24px;
+    color: #ff3b30;
+    font-weight: 600;
+    user-select: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 400px) {
+    .pin-container {
+      width: 90vw;
+      padding: 30px 20px 40px 20px;
+    }
+    .pin-display {
+      font-size: 36px;
+      letter-spacing: 14px;
+    }
+    .pin-display span {
+      width: 24px;
+      margin: 0 4px;
+    }
+    .keypad button {
+      font-size: 26px;
+      padding: 18px 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="pin-container" role="main" aria-label="กรอกรหัสผ่าน">
+  <h2>กรอกรหัสผ่าน</h2>
+  <div class="pin-display" id="pin-display" aria-live="polite" aria-atomic="true">
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <div class="keypad" role="group" aria-label="แป้นกดตัวเลข">
+    <button type="button" data-num="1" aria-label="หมายเลข 1">1</button>
+    <button type="button" data-num="2" aria-label="หมายเลข 2">2</button>
+    <button type="button" data-num="3" aria-label="หมายเลข 3">3</button>
+    <button type="button" data-num="4" aria-label="หมายเลข 4">4</button>
+    <button type="button" data-num="5" aria-label="หมายเลข 5">5</button>
+    <button type="button" data-num="6" aria-label="หมายเลข 6">6</button>
+    <button type="button" data-num="7" aria-label="หมายเลข 7">7</button>
+    <button type="button" data-num="8" aria-label="หมายเลข 8">8</button>
+    <button type="button" data-num="9" aria-label="หมายเลข 9">9</button>
+    <button type="button" class="disabled" aria-hidden="true"></button>
+    <button type="button" data-num="0" aria-label="หมายเลข 0">0</button>
+    <button type="button" class="delete" aria-label="ลบตัวเลข">⌫</button>
+  </div>
+</div>
+
+<script>
+  const pinDisplay = document.getElementById("pin-display");
+  const buttons = document.querySelectorAll(".keypad button");
+  let pin = [];
+
+  function updateDisplay() {
+    const spans = pinDisplay.querySelectorAll("span");
+    spans.forEach((span, i) => {
+      if (pin[i]) {
+        span.textContent = "●";
+        span.classList.add("filled");
+      } else {
+        span.textContent = "";
+        span.classList.remove("filled");
+      }
+    });
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.classList.contains("disabled")) return;
+
+      if (btn.classList.contains("delete")) {
+        pin.pop();
+      } else {
+        if (pin.length < 6) {
+          pin.push(btn.dataset.num);
+        }
+      }
+      updateDisplay();
+
+      if (pin.length === 6) {
+        const enteredPin = pin.join("");
+        const correctPin = "090668"; // เปลี่ยนรหัสที่นี่
+
+        if (enteredPin === correctPin) {
+          alert("🎉 รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...");
+          // ตัวอย่างพาไปหน้าอื่น
+          window.location.href = "secret.html";
+        } else {
+          alert("❌ รหัสผ่านไม่ถูกต้อง ลองใหม่อีกครั้ง");
+          pin = [];
+          updateDisplay();
+        }
+      }
+    });
+  });
+
+  // ตั้งโฟกัสเริ่มต้นที่ปุ่มแรก (เพื่อช่วยการเข้าถึง)
+  buttons[0].focus();
+</script>
+
+</body>
+</html>
